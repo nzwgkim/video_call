@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class CamScreen extends StatelessWidget {
+class CamScreen extends StatefulWidget {
   const CamScreen({super.key});
 
+  @override
+  State<CamScreen> createState() => _CamScreenState();
+}
+
+class _CamScreenState extends State<CamScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,16 +19,22 @@ class CamScreen extends StatelessWidget {
         ),
       ),
       body: FutureBuilder<bool>(
-          future: init(),
+          future: getPermission(),
           builder: (context, snapshot) {
             /// 에러가 발생하면 화면에 보여준다.
             if (snapshot.hasError) {
+              print('Err-state: ${snapshot.connectionState}');
               return Center(
                 child: Text(snapshot.error.toString()),
               );
             }
             if (snapshot.hasData) {
+              print('Data-state: ${snapshot.connectionState}');
+              print('data: ${snapshot.data}');
+              return Center(child: Text(snapshot.data.toString()));
             } else {
+              print('NoData-state: ${snapshot.connectionState}');
+
               /// 로딩중일때
               return const Center(
                 child: CircularProgressIndicator(),
@@ -35,7 +46,7 @@ class CamScreen extends StatelessWidget {
     );
   }
 
-  Future<bool> init() async {
+  Future<bool> getPermission() async {
     final response = await [Permission.camera, Permission.microphone].request();
 
     final cameraPermission = response[Permission.camera];
