@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_call/cam_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,14 +35,17 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Column(
-          children: [
-            Expanded(
-              child: _Logo(onPressed: onPressed),
-            ),
-            const Expanded(child: _Image()),
-            Expanded(child: _Button(onPressed: onPressedBtn)),
-          ],
+        body: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: _Logo(onPressed: onPressed),
+              ),
+              const Expanded(child: _Image()),
+              Expanded(child: _Button(onPressed: onPressedBtn)),
+            ],
+          ),
         ),
       ),
     );
@@ -52,7 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   onPressedBtn() {
-    print('pressed');
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const CamScreen()));
   }
 }
 
@@ -120,7 +125,8 @@ class _Image extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Image.asset(
-      'asset/img/video_call.png',
+      // 'asset/img/video_call.png',
+      'asset/img/live_chat.png',
       width: 200,
     );
   }
@@ -133,7 +139,8 @@ class _Button extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ElevatedButton(
             onPressed: onPressed,
