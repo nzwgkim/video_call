@@ -75,7 +75,7 @@ class _Logo extends StatelessWidget {
         // alignment: Alignment.center,
         ///-------------------------
         ///기울어짐
-        transform: Matrix4.rotationZ(0.1),
+        transform: Matrix4.rotationZ(0.06),
 
         ///-------------------------
         ///기울어짐
@@ -107,9 +107,12 @@ class _Logo extends StatelessWidget {
                 width: 12,
               ),
               Text(
-                'Video Chat',
+                'Woody Chat',
                 style: TextStyle(
-                    color: Colors.white, fontSize: 30, letterSpacing: 2),
+                    color: Colors.white,
+                    fontSize: 30,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.w900),
               )
             ],
           ),

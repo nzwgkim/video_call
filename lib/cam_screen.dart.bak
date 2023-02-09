@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:video_call/agora.dart';
 
 class CamScreen extends StatefulWidget {
-  const CamScreen({Key? key}) : super(key: key);
+  const CamScreen({super.key});
 
   @override
   State<CamScreen> createState() => _CamScreenState();
@@ -13,38 +13,42 @@ class CamScreen extends StatefulWidget {
 class _CamScreenState extends State<CamScreen> {
   RtcEngine? engine;
 
-  // 내 ID
-  int? uid = 0;
-
-  // 상대 ID
+  // 나의 id... 초기값으로 0을 지정해야 connection시에 id 값을 받아올 수 있다.
+  int uid = 0;
+  // 상대방 id
   int? otherUid;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('LIVE'),
+        title: const Text(
+          'Live...',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        ),
       ),
       body: FutureBuilder<bool>(
-        future: init(),
-        builder: (context, snapshot) {
-          // print('--------stack');
-          // print(snapshot.stackTrace);
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-              ),
-            );
-          }
+          future: getPermission(),
+          builder: (context, snapshot) {
+                    print('--------stack');
+          print(snapshot.stackTrace);
+            /// 에러가 발생하면 화면에 보여준다.
+            if (snapshot.hasError) {
+              print('Err-state: ${snapshot.connectionState}');
+              return Center(
+                child: Text(snapshot.error.toString()),
+              );
+            }
+            if (!snapshot.hasData) {
+              print('NoData-state: ${snapshot.connectionState}');
 
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+              /// 로딩중일때
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
-          return Column(
+            return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
@@ -74,7 +78,7 @@ class _CamScreenState extends State<CamScreen> {
 
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Exit channel'),
+                  child: Text('채널 나가기'),
                 ),
               ),
             ],
@@ -83,18 +87,17 @@ class _CamScreenState extends State<CamScreen> {
       ),
     );
   }
-
-  renderMainView() {
+renderMainView() {
     if (uid == null) {
-      return const Center(
-        child: Text('Please join this channel.'),
+      return Center(
+        child: Text('채널에 참여해주세요.'),
       );
     } else {
       // 채널에 참여하고 있을때
       return AgoraVideoView(
         controller: VideoViewController(
           rtcEngine: engine!,
-          canvas: const VideoCanvas(
+          canvas: VideoCanvas(
             uid: 0,
           ),
         ),
@@ -104,25 +107,24 @@ class _CamScreenState extends State<CamScreen> {
 
   renderSubView() {
     if (otherUid == null) {
-      return const Center(
-        child: Text('No user.'),
+      return Center(
+        child: Text('채널에 유저가 없습니다.'),
       );
     } else {
       return AgoraVideoView(
         controller: VideoViewController.remote(
           rtcEngine: engine!,
           canvas: VideoCanvas(uid: otherUid),
-          connection: const RtcConnection(channelId: CHANNEL_NAME),
+          connection: RtcConnection(channelId: CHANNEL_NAME),
         ),
       );
     }
   }
+  Future<bool> getPermission() async {
+    final response = await [Permission.camera, Permission.microphone].request();
 
-  Future<bool> init() async {
-    final resp = await [Permission.camera, Permission.microphone].request();
-
-    final cameraPermission = resp[Permission.camera];
-    final microphonePermission = resp[Permission.microphone];
+    final cameraPermission = response[Permission.camera];
+    final microphonePermission = response[Permission.microphone];
 
     if (cameraPermission != PermissionStatus.granted ||
         microphonePermission != PermissionStatus.granted) {
@@ -133,7 +135,7 @@ class _CamScreenState extends State<CamScreen> {
       engine = createAgoraRtcEngine();
 
       await engine!.initialize(
-        const RtcEngineContext(
+        RtcEngineContext(
           appId: APP_ID,
         ),
       );
@@ -144,21 +146,21 @@ class _CamScreenState extends State<CamScreen> {
           // connection -> 연결정보
           // elapsed -> 연결된 시간 (연결된지 얼마나 됐는지)
           onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-            // print('채널에 입장했습니다. uid: ${connection.localUid}');
+            print('채널에 입장했습니다. uid: ${connection.localUid}');
             setState(() {
               uid = connection.localUid;
             });
           },
           // 내가 채널에서 나갔을때
           onLeaveChannel: (RtcConnection connection, RtcStats stats) {
-            // print('채널 퇴장');
+            print('채널 퇴장');
             setState(() {
               uid == null;
             });
           },
           // 상대방 유저가 들어왔을때
           onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-            // print('상대가 채널에 입장했습니다. otherUid: $remoteUid');
+            print('상대가 채널에 입장했습니다. otherUid: $remoteUid');
             setState(() {
               otherUid = remoteUid;
             });
@@ -166,7 +168,7 @@ class _CamScreenState extends State<CamScreen> {
           // 상대가 나갔을때
           onUserOffline: (RtcConnection connection, int remoteUid,
               UserOfflineReasonType reason) {
-            // print('상대가 채널에서 나갔습니다. otherUid: $remoteUid');
+            print('상대가 채널에서 나갔습니다. otherUid: $remoteUid');
 
             setState(() {
               otherUid = null;
@@ -179,7 +181,7 @@ class _CamScreenState extends State<CamScreen> {
 
       await engine!.startPreview();
 
-      ChannelMediaOptions options = const ChannelMediaOptions();
+      ChannelMediaOptions options = ChannelMediaOptions();
 
       await engine!.joinChannel(
         token: TEMP_TOKEN,
